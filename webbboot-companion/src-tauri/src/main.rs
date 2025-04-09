@@ -1,6 +1,128 @@
-// Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use tauri::Manager;
+use rusb::{devices};
+use serde::{Serialize, Deserialize};
+use std::process::Command;
+use std::fs::File;
+use std::io::Write;
+use log::{info, error};
+use simplelog::{TermLogger, Config, LevelFilter};
+use tokio::net::TcpListener;
+use tokio_tungstenite::accept_async;
+use futures_util::{SinkExt, StreamExt};
+
+#[derive(Serialize, Deserialize)]
+struct Job {
+    action: String,
+    iso: Option<String>,
+    filesystem: String,
+    scheme: String,
+    device: String,
+}
+
+#[tauri::command]
+fn list_usb_devices() -> Vec<String> {
+    match devices() {
+        Ok(dev_list) => dev_list
+            .iter()
+            .map(|dev| {
+                let desc = dev.device_descriptor().unwrap();
+                format!("USB {:04x}:{:04x}", desc.vendor_id(), desc.product_id())
+            })
+            .collect(),
+        Err(e) => {
+            error!("Failed to list USB devices: {}", e);
+            vec![]
+        }
+    }
+}
+
+async fn execute_job(job: Job, write: &mut tokio_tungstenite::WebSocketStream<tokio::net::tcp::OwnedWriteHalf>) {
+    info!("Received job: {:?}", job);
+
+    let steps = if job.action == "create" { 3 } else { 2 };
+    let step_time = 2; // Seconds per step (for demo)
+
+    // Step 1: Formatting
+    write.send(tokio_tungstenite::tungstenite::Message::Text(
+        r#"{"status": "Formatting...", "progress": 33}"#.into()
+    )).await.unwrap();
+
+    #[cfg(target_os = "linux")]
+    let format_result = Command::new("sudo")
+        .args(["mkfs", &format!("-t{}", job.filesystem.to_lowercase()), &job.device])
+        .output();
+
+    match format_result {
+        Ok(output) if output.status.success() => info!("Formatted {}", job.device),
+        _ => {
+            error!("Format failed for {}", job.device);
+            write.send(tokio_tungstenite::tungstenite::Message::Text(
+                r#"{"status": "Format failed (run with sudo?)", "progress": 0}"#.into()
+            )).await.unwrap();
+            return;
+        }
+    }
+
+    if job.action == "create" {
+        // Step 2: Writing ISO
+        write.send(tokio_tungstenite::tungstenite::Message::Text(
+            r#"{"status": "Writing ISO...", "progress": 66}"#.into()
+        )).await.unwrap();
+
+        #[cfg(target_os = "linux")]
+        let write_result = Command::new("sudo")
+            .args(["dd", &format!("if={}", job.iso.as_ref().unwrap()), &format!("of={}", job.device), "bs=4M", "status=progress"])
+            .output();
+
+        match write_result {
+            Ok(output) if output.status.success() => info!("Wrote ISO to {}", job.device),
+            _ => {
+                error!("ISO write failed for {}", job.device);
+                write.send(tokio_tungstenite::tungstenite::Message::Text(
+                    r#"{"status": "ISO write failed (run with sudo?)", "progress": 0}"#.into()
+                )).await.unwrap();
+                return;
+            }
+        }
+    }
+
+    // Step 3: Done
+    write.send(tokio_tungstenite::tungstenite::Message::Text(
+        r#"{"status": "Done", "progress": 100}"#.into()
+    )).await.unwrap();
+}
+
+async fn handle_websocket(app: tauri::AppHandle) {
+    TermLogger::init(LevelFilter::Info, Config::default(), simplelog::TerminalMode::Mixed).unwrap();
+    let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
+    info!("WebSocket server started on ws://localhost:8080");
+
+    while let Ok((stream, _)) = listener.accept().await {
+        let ws_stream = accept_async(stream).await.unwrap();
+        let (mut write, mut read) = ws_stream.split();
+
+        let devices = list_usb_devices();
+        let msg = serde_json::to_string(&serde_json::json!({"devices": devices})).unwrap();
+        write.send(tokio_tungstenite::tungstenite::Message::Text(msg)).await.unwrap();
+
+        while let Some(Ok(msg)) = read.next().await {
+            if let Ok(job) = serde_json::from_str::<Job>(&msg.to_string()) {
+                execute_job(job, &mut write).await;
+            }
+        }
+    }
+}
+
 fn main() {
-    webbboot_companion_lib::run()
+    tauri::Builder::default()
+        .setup(|app| {
+            let app_handle = app.handle();
+            tauri::async_runtime::spawn(handle_websocket(app_handle));
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![list_usb_devices])
+        .run(tauri::generate_context!())
+        .expect("Error running WebBoot Companion");
 }
