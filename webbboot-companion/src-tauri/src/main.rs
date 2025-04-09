@@ -39,8 +39,6 @@ fn list_usb_devices() -> Vec<String> {
 
 async fn execute_job(job: Job, write: &mut tokio_tungstenite::WebSocketStream<tokio::net::tcp::OwnedWriteHalf>) {
     info!("Received job: {:?}", job);
-
-    // Step 1: Formatting
     write.send(tokio_tungstenite::tungstenite::Message::Text(
         r#"{"status": "Formatting...", "progress": 33}"#.into()
     )).await.unwrap();
@@ -62,7 +60,6 @@ async fn execute_job(job: Job, write: &mut tokio_tungstenite::WebSocketStream<to
     }
 
     if job.action == "create" {
-        // Step 2: Writing ISO
         write.send(tokio_tungstenite::tungstenite::Message::Text(
             r#"{"status": "Writing ISO...", "progress": 66}"#.into()
         )).await.unwrap();
@@ -93,7 +90,6 @@ async fn execute_job(job: Job, write: &mut tokio_tungstenite::WebSocketStream<to
         }
     }
 
-    // Step 3: Done
     write.send(tokio_tungstenite::tungstenite::Message::Text(
         r#"{"status": "Done", "progress": 100}"#.into()
     )).await.unwrap();
@@ -120,13 +116,15 @@ async fn handle_websocket(app: tauri::AppHandle) {
     }
 }
 
-fn main() {
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            let app_handle = app.handle();
+            let app_handle = app.handle().clone();
             tauri::async_runtime::spawn(handle_websocket(app_handle));
             Ok(())
         })
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![list_usb_devices])
         .run(tauri::generate_context!())
         .expect("Error running WebBoot Companion");

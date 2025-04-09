@@ -1,31 +1,31 @@
 {
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "WebBoot Companion",
+  "version": "1.0.0",
+  "identifier": "com.ju4700.webbbootcompanion",
   "build": {
-    "beforeBuildCommand": "",
-    "beforeDevCommand": "",
-    "devPath": "http://localhost:1420",
-    "distDir": "../index.html"
+    "frontendDist": "../index.html"
   },
-  "package": {
-    "productName": "WebBoot Companion",
-    "version": "1.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": true
-    },
-    "bundle": {
-      "identifier": "com.ju4700.webbbootcompanion"
-    },
+  "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "WebBoot Companion",
         "width": 400,
         "height": 200,
-        "resizable": false
+        "resizable": false,
+        "fullscreen": false
       }
     ],
     "security": {
       "csp": null
     }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.png"
+    ]
   }
 }
