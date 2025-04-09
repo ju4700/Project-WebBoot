@@ -1,6 +1,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use tauri::Manager;
 use rusb::{devices};
 use serde::{Serialize, Deserialize};
 use std::process::Command;
@@ -11,7 +10,7 @@ use tokio::net::TcpListener;
 use tokio_tungstenite::accept_async;
 use futures_util::{SinkExt, StreamExt};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Job {
     action: String,
     iso: Option<String>,
@@ -37,7 +36,7 @@ fn list_usb_devices() -> Vec<String> {
     }
 }
 
-async fn execute_job(job: Job, write: &mut tokio_tungstenite::WebSocketStream<tokio::net::tcp::OwnedWriteHalf>) {
+async fn execute_job(job: Job, write: &mut futures_util::stream::SplitSink<tokio_tungstenite::WebSocketStream<tokio::net::TcpStream>, tokio_tungstenite::tungstenite::Message>) {
     info!("Received job: {:?}", job);
     write.send(tokio_tungstenite::tungstenite::Message::Text(
         r#"{"status": "Formatting...", "progress": 33}"#.into()
@@ -48,6 +47,7 @@ async fn execute_job(job: Job, write: &mut tokio_tungstenite::WebSocketStream<to
         .args(["mkfs", &format!("-t{}", job.filesystem.to_lowercase()), &job.device])
         .output();
 
+    #[cfg(target_os = "linux")]
     match format_result {
         Ok(output) if output.status.success() => info!("Formatted {}", job.device),
         _ => {
@@ -78,6 +78,7 @@ async fn execute_job(job: Job, write: &mut tokio_tungstenite::WebSocketStream<to
             .args(["dd", &format!("if={}", iso_path), &format!("of={}", job.device), "bs=4M", "status=progress"])
             .output();
 
+        #[cfg(target_os = "linux")]
         match write_result {
             Ok(output) if output.status.success() => info!("Wrote ISO to {}", job.device),
             _ => {
@@ -95,8 +96,13 @@ async fn execute_job(job: Job, write: &mut tokio_tungstenite::WebSocketStream<to
     )).await.unwrap();
 }
 
-async fn handle_websocket(app: tauri::AppHandle) {
-    TermLogger::init(LevelFilter::Info, Config::default(), simplelog::TerminalMode::Mixed).unwrap();
+async fn handle_websocket(_app: tauri::AppHandle) {
+    TermLogger::init(
+        LevelFilter::Info, 
+        Config::default(), 
+        simplelog::TerminalMode::Mixed,
+        simplelog::ColorChoice::Auto
+    ).unwrap();
     let listener = TcpListener::bind("127.0.0.1:8080").await.unwrap();
     info!("WebSocket server started on ws://localhost:8080");
 
@@ -121,11 +127,17 @@ pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
             let app_handle = app.handle().clone();
-            tauri::async_runtime::spawn(handle_websocket(app_handle));
+            tauri::async_runtime::spawn(async move {
+                handle_websocket(app_handle).await;
+            });
             Ok(())
         })
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![list_usb_devices])
         .run(tauri::generate_context!())
         .expect("Error running WebBoot Companion");
+}
+
+fn main() {
+    run();
 }
