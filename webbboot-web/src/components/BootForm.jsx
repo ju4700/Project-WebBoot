@@ -55,7 +55,7 @@ function BootForm() {
       action,
       iso: iso ? iso.name : null,
       filesystem: fileSystem,
-      scheme: scheme,
+      scheme,
       device: selectedDevice,
     };
     ws.send(JSON.stringify(job));
@@ -96,7 +96,9 @@ function BootForm() {
       >
         <option value="">Select USB Device</option>
         {usbDevices.map((dev, i) => (
-          <option key={i} value={dev}>{dev}</option>
+          <option key={i} value={dev}>
+            {dev}
+          </option>
         ))}
       </select>
       <div className="button-group">
@@ -108,7 +110,7 @@ function BootForm() {
         </button>
       </div>
       <div className="progress-bar">
-        <div className="progress" style={{ width: `${progress}%` }}></div>
+        <div className="progress" style={{ width: `${progress}%` }} />
       </div>
       <p className="status">{status}</p>
     </div>
