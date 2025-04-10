@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false 
       matrix:
         platform: [ubuntu-22.04, windows-latest, macos-latest]
 
@@ -49,13 +50,32 @@ jobs:
         if: matrix.platform == 'windows-latest'
         run: |
           choco install -y libusb
+          
+          # Install WebView2 - required for Tauri on Windows
+          choco install -y microsoft-edge-webview2
+          
+          # Install Visual C++ Build Tools
+          choco install -y visualstudio2019buildtools visualstudio2019-workload-vctools
+          
+          # Show installed environment for debugging
+          echo "Environment Path:"
+          echo $env:PATH
 
       - name: Install npm dependencies
         run: |
           cd webbboot-companion
           npm install
 
-      - name: Build Tauri app
+      - name: Build Tauri app (Windows with verbose output)
+        if: matrix.platform == 'windows-latest'
+        run: |
+          cd webbboot-companion
+          npm run tauri build -- --debug
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Tauri app (other platforms)
+        if: matrix.platform != 'windows-latest'
         run: |
           cd webbboot-companion
           npm run tauri build --release
