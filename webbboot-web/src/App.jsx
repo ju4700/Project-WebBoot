@@ -5,18 +5,19 @@ import BootForm from './components/BootForm';
 function App() {
   return (
     <div className="App">
+      <h1>WebBoot</h1>
       <BootForm />
       <section>
         <h2>Get WebBoot Companion</h2>
         <p>To use WebBoot, download and run the companion app for your platform:</p>
         <ul>
-          <li><a href="/downloads/webbboot-companion-linux.AppImage" download>Linux (.deb)</a></li>
-          <li><a href="/downloads/webbboot-companion-linux.AppImage" download>Linux (.rpm)</a></li>
-          <li><a href="/downloads/webbboot-companion-windows.exe" download>Windows (.exe)</a></li>
-          <li><a href="/downloads/webbboot-companion-macos.dmg" download>macOS (.dmg)</a></li>
+          <li><a className="download-btn" href="/downloads/webbboot-companion-linux.deb" download>Linux (DEB)</a></li>
+          <li><a className="download-btn" href="/downloads/webbboot-companion-linux.rpm" download>Linux (RPM)</a></li>
+          <li><a className="download-btn" href="/downloads/webbboot-companion-windows.exe" download>Windows (EXE)</a></li>
+          <li><a className="download-btn" href="/downloads/webbboot-companion-macos.dmg" download>macOS (DMG)</a></li>
         </ul>
-        <p>After downloading, run the app, then refresh this page to start.</p>
-        <p>Made by <a href='https://github.com/ju4700'>ju4700</a></p>
+        <p>After downloading, install/run the app, then refresh this page to start.</p>
+        <p>Made by <a className="link" href="https://github.com/ju4700">ju4700</a></p>
       </section>
     </div>
   );
