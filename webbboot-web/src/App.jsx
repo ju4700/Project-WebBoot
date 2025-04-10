@@ -5,7 +5,6 @@ import BootForm from './components/BootForm';
 function App() {
   return (
     <div className="App">
-      <h1>WebBoot</h1>
       <BootForm />
       <section>
         <h2>Get WebBoot Companion</h2>
