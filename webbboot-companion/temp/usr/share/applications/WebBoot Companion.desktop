@@ -1,0 +1,7 @@
+[Desktop Entry]
+Categories=
+Exec=webbboot-companion
+Icon=webbboot-companion
+Name=WebBoot Companion
+Terminal=false
+Type=Application
