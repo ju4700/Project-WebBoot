@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "identifier": "com.ju4700.webbbootcompanion",
   "build": {
-    "frontendDist": "../index.html"
+    "frontendDist": "index.html"
   },
   "app": {
     "withGlobalTauri": true,
@@ -23,7 +23,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": ["deb", "rpm"],
     "icon": [
       "icons/icon.png"
     ]
