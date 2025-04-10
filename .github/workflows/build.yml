@@ -27,7 +27,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Install dependencies (Ubuntu)
-        if: matrix.platform == "Ubuntu-20.04"
+        if: matrix.platform == "ubuntu-20.04".toLowerCase()
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev \
@@ -41,12 +41,12 @@ jobs:
             libusb-1.0-0-dev
 
       - name: Install dependencies (macOS)
-        if: matrix.platform == "macOS-Latest"
+        if: matrix.platform == "macOS-Latest".toLowerCase()
         run: |
           brew install libusb
 
       - name: Install dependencies (Windows)
-        if: matrix.platform == "Windows-Latest"
+        if: matrix.platform == "Windows-Latest".toLowerCase()
         run: |
           choco install -y libusb
 
@@ -63,7 +63,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts (Ubuntu)
-        if: matrix.platform == "Ubuntu-20.04"
+        if: matrix.platform == "Ubuntu-20.04".toLowerCase()
         uses: actions/upload-artifact@v4
         with:
           name: webbboot-companion-ubuntu-latest
@@ -72,14 +72,14 @@ jobs:
             webbboot-companion/src-tauri/target/release/bundle/rpm/*.rpm
 
       - name: Upload artifacts (Windows)
-        if: matrix.platform == "Windows-Latest"
+        if: matrix.platform == "Windows-Latest".toLowerCase()
         uses: actions/upload-artifact@v4
         with:
           name: webbboot-companion-windows-latest
           path: webbboot-companion/src-tauri/target/release/bundle/nsis/*.exe
 
       - name: Upload artifacts (macOS)
-        if: matrix.platform == "macOS-Latest"
+        if: matrix.platform == "macOS-Latest".toLowerCase()
         uses: actions/upload-artifact@v4
         with:
           name: webbboot-companion-macos-latest
