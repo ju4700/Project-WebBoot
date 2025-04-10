@@ -56,13 +56,11 @@ jobs:
           npm install
 
       - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        with:
-          tauriScript: npm run tauri
-          args: build --release
+        run: |
+          cd webbboot-companion
+          npm run tauri build --release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: webbboot-companion
 
       - name: Upload artifacts (Ubuntu)
         if: matrix.platform == "Ubuntu-20.04"
