@@ -27,18 +27,14 @@ fn list_usb_devices() -> Vec<String> {
             .filter_map(|dev| {
                 match dev.device_descriptor() {
                     Ok(desc) => {
-                        // Open the device to get its configuration
                         match dev.open() {
                             Ok(handle) => {
-                                // Get the active configuration
                                 if let Ok(config) = handle.active_configuration() {
-                                    // Get the configuration descriptor
                                     if let Ok(config_desc) = dev.config_descriptor(config - 1) {
-                                        // Check interfaces for mass storage class (0x08)
-                                        let is_mass_storage = config_desc
+                                       let is_mass_storage = config_desc
                                             .interfaces()
                                             .flat_map(|interface| interface.descriptors())
-                                            .any(|desc| desc.class_code() == 0x08); // Mass Storage Class
+                                            .any(|desc| desc.class_code() == 0x08);
                                         if is_mass_storage {
                                             Some(format!("USB {:04x}:{:04x}", desc.vendor_id(), desc.product_id()))
                                         } else {
