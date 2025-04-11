@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false 
       matrix:
-        platform: [ubuntu-22.04, windows-latest, macos-latest]
+        platform: [windows-latest, macos-latest]
 
     runs-on: ${{ matrix.platform }}
 
@@ -26,20 +26,6 @@ jobs:
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
-
-      - name: Install dependencies (Ubuntu)
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev \
-            build-essential \
-            curl \
-            wget \
-            libssl-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libusb-1.0-0-dev
 
       - name: Install dependencies (macOS)
         if: matrix.platform == 'macos-latest'
@@ -74,22 +60,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Tauri app (other platforms)
-        if: matrix.platform != 'windows-latest'
+      - name: Build Tauri app (macOS)
+        if: matrix.platform == 'macos-latest'
         run: |
           cd webbboot-companion
           npm run tauri build --release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload artifacts (Ubuntu)
-        if: matrix.platform == 'ubuntu-22.04'
-        uses: actions/upload-artifact@v4
-        with:
-          name: webbboot-companion-ubuntu-latest
-          path: |
-            webbboot-companion/src-tauri/target/release/bundle/deb/*.deb
-            webbboot-companion/src-tauri/target/release/bundle/rpm/*.rpm
 
       - name: Upload artifacts (Windows)
         if: matrix.platform == 'windows-latest'
