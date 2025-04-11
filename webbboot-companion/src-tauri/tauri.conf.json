@@ -25,6 +25,7 @@
     "active": true,
     "targets": ["deb", "rpm", "nsis", "dmg"],
     "icon": [
+      "icons/icon.ico",
       "icons/icon.png"
     ]
   }
