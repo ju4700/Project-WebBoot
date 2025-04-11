@@ -65,7 +65,7 @@ function BootForm() {
 
   return (
     <div className="boot-form">
-      <h1>WebBoot</h1>
+      <h1><img src="/icon.png" style="width: 10px, height: 10px"></img>WebBoot</h1>
       <input
         type="file"
         accept=".iso"
