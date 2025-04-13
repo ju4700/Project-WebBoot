@@ -6,3 +6,7 @@ A cross-platform tool to create bootable USB drives and restore USBs.
 - Format USBs (FAT32, NTFS, exFAT).
 - Create bootable USBs from ISOs (MBR/GPT).
 - Restore USBs to a blank state.
+
+## Upcoming Features
+- All the task available from phone.
+- Operation for connected storage in phone.
