@@ -303,8 +303,8 @@ li {
   }
   
   section {
-    padding: 1.25rem;
-    margin: 1.5rem 0;
+    margin: 1rem 0;
+    max-width: 100%;
   }
   
   ul {
