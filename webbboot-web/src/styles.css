@@ -81,7 +81,7 @@ p {
 /* Layout components */
 section {
   width: 100%;
-  max-width: 700px;
+  max-width: 800px;
   margin: 2rem 0;
   padding: 1.75rem;
   background-color: var(--text-light);
