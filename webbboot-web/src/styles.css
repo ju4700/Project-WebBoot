@@ -11,10 +11,35 @@
   --container-width: 1200px;    /* Max content width */
 }
 
-/* Base styles for all screens */
+/* Hide scrollbars but keep scrolling functionality */
 html {
   box-sizing: border-box;
   font-size: 16px;  /* Base font size for rem units */
+  /* Hide scrollbar for Firefox */
+  scrollbar-width: none;
+  /* Hide scrollbar for IE and Edge */
+  -ms-overflow-style: none;
+}
+
+/* Hide scrollbar for Chrome, Safari, and newer Edge */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+}
+
+/* For any element with scrolling content */
+.scrollable-content {
+  overflow-y: auto;
+  /* Firefox */
+  scrollbar-width: none;
+  /* IE and Edge */
+  -ms-overflow-style: none;
+}
+
+.scrollable-content::-webkit-scrollbar {
+  display: none;
+  width: 0;
 }
 
 *, *:before, *:after {
