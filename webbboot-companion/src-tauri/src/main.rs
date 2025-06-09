@@ -10,8 +10,6 @@ use tokio::net::TcpListener;
 use tokio_tungstenite::accept_async;
 use futures_util::{SinkExt, StreamExt};
 use std::fs;
-use std::process::Stdio;
-use std::os::unix::process::ExitStatusExt;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Job {
